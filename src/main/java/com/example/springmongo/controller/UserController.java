@@ -1,7 +1,6 @@
 package com.example.springmongo.controller;
 
 import com.example.springmongo.model.User;
-import com.example.springmongo.model.UserDto;
 import com.example.springmongo.repositories.UserDao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,36 +23,28 @@ public class UserController {
         this.userDao = userDao;
     }
 
-    public List<UserDto> getAllUsers() {
-        List<User> users = userDao.findAll();
-        List<UserDto> usersDto = new ArrayList<>();
-        for (User u : users) {
-            usersDto.add(new UserDto(u));
-        }
-        return usersDto;
+    public List<User> getAllUsers() {
+        return userDao.findAll();
     }
 
-    public void addUser(UserDto userDto) {
-        User user = new User(userDto);
+    public void addUser(User user) {
         userDao.save(user);
     }
 
-    public UserDto getUser(Integer id) {
-        Optional<User> users = userDao.findByMyId(id);
-        UserDto userDto = new UserDto(users.get());
-        return userDto;
+    public User getUser(Long id) {
+        Optional<User> users = userDao.findById(id);
+        return users.get();
     }
 
-    public void deleteUser(Integer id) {
-        userDao.deleteById(id);
+    public void deleteUser(Long id) {
+        User user = getUser(id);
+        userDao.delete(user);
     }
 
-    public void putUser(UserDto userDto, Integer id) {
-        User user = new User(userDto);
+    public void putUser(User user, Long id) {
 
-        User real = new User(getUser(id));
+        User real = getUser(id);
 
-        //real.setId(user.getId());
         real.setEmail(user.getEmail());
         real.setPassword(user.getPassword());
         real.setFullName(user.getFullName());
@@ -61,8 +52,8 @@ public class UserController {
         userDao.save(real);
     }
 
-    public void patchUser(Integer id, JsonPatch patch) throws JsonPatchException, JsonProcessingException {
-        User user = new User(getUser(id));
+    public void patchUser(Long id, JsonPatch patch) throws JsonPatchException, JsonProcessingException {
+        User user = getUser(id);
         User userPatched = applyPatch(patch, user);
 
         userDao.save(userPatched);

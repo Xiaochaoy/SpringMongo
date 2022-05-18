@@ -13,11 +13,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Repository
-public interface UserDao extends MongoRepository<User, Integer> {
-    List<User> findAll();
-
-    Optional<User> findByMyId(int id);
-
-
+public interface UserDao extends MongoRepository<User, Long> {
 
 }
