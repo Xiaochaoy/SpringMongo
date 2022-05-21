@@ -111,18 +111,13 @@ public class UserController {
     /*
     {
         "op":"replace",
-        "path":"/pruducts/0/name",
+        "path":"/products/0/name",
         "value":"afafqwr"
     }
     {
-        "op":"add",
+         "op":"add",
         "path":"/products/0",
-        "value":{
-                "id": 5,
-                "name": "alantonto",
-                "quantity": 9,
-                "precio": 99
-                }
+        "value": {"id": 4}
     }
     {
         "op":"remove",
