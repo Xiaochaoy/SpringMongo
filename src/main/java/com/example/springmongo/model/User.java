@@ -21,7 +21,7 @@ public class User {
     public static final String SEQUENCE_NAME = "users_sequence";
     private String name;
     private String email;
-
+    @DBRef
     private List<Product> products;
 
     public void addProduct(Product product){

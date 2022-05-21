@@ -42,19 +42,6 @@ public class ProductController {
         return productDao.findById(id).get();
     }
 
-    public void actualizarTodo(List<Product> products){
-        for (Product p : getAllProducts()){
-            for (Product pp: products){
-                if (p.getId() == pp.getId()){
-                    p.setName(pp.getName());
-                    p.setPrecio(pp.getPrecio());
-                    p.setQuantity(pp.getQuantity());
-                    productDao.save(p);
-                }
-            }
-        }
-    }
-
     public void deleteById(int id){
         productDao.deleteById(id);
     }
@@ -67,6 +54,19 @@ public class ProductController {
         real.setQuantity(product.getQuantity());
 
         productDao.save(real);
+    }
+
+    public void actualizarTodo(List<Product> products){
+        for (Product p : getAllProducts()){
+            for (Product pp: products){
+                if (p.getId() == pp.getId()){
+                    p.setName(pp.getName());
+                    p.setPrecio(pp.getPrecio());
+                    p.setQuantity(pp.getQuantity());
+                    productDao.save(p);
+                }
+            }
+        }
     }
 
     public void patchProduct(int id, JsonPatch patch) throws JsonPatchException, JsonProcessingException {

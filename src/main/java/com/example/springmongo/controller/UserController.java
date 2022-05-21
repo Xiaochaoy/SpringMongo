@@ -17,7 +17,6 @@ import java.util.*;
 public class UserController {
     UserDao userDao;
     ProductController productController;
-
     @Autowired
     public UserController(UserDao userDao, ProductController productController) {
         this.userDao = userDao;
@@ -25,47 +24,16 @@ public class UserController {
     }
 
     public List<User> getAllUsers() {
-
-        for (User u: userDao.findAll()){
-            actualizarProducto(u);
-        }
-
         return userDao.findAll();
     }
 
     public User getUser(int id) {
-        User user = userDao.findById(id).get();
-
-        actualizarProducto(user);
-
         return userDao.findById(id).get();
-    }
-
-    private void actualizarProducto(User user) {
-        for (Product p : user.getProducts()){
-            for (Product pp: productController.getAllProducts()){
-                if (productController.productDao.existsById(p.getId())){
-                    if (p.getId() == pp.getId()) {
-                        p.setName(pp.getName());
-                        p.setPrecio(pp.getPrecio());
-                        p.setQuantity(pp.getQuantity());
-                        userDao.save(user);
-                    }
-                }else{
-                    int i = user.getProducts().indexOf(p);
-                    user.getProducts().remove(i);
-                    userDao.save(user);
-                }
-            }
-        }
-
-
     }
 
     public void addUser(User user) {
         List<Product> products = user.getProducts();
         productController.addAllProducts(products);
-
         userDao.save(user);
     }
 
@@ -104,6 +72,7 @@ public class UserController {
         }else if (user.getProducts().size() < userPatched.getProducts().size()){
             productController.addAllProducts(userPatched.getProducts());
         }
+
         userDao.save(userPatched);
 
     }
@@ -119,7 +88,6 @@ public class UserController {
         User u = getUser(id);
         productController.añadir(product);
         Product p = productController.getProduct(product.getId());
-
         boolean encontrar = false;
         for (Product pp : u.getProducts()){
             if (pp.getId() == p.getId()) {
@@ -143,7 +111,7 @@ public class UserController {
     /*
     {
         "op":"replace",
-        "path":"/prudcts/0/name",
+        "path":"/pruducts/0/name",
         "value":"afafqwr"
     }
     {
