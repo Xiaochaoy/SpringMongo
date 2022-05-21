@@ -13,6 +13,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Repository
-public interface UserDao extends MongoRepository<User, Long> {
+public interface UserDao extends MongoRepository<User, Integer> {
 
 }

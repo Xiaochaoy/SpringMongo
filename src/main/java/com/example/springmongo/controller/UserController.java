@@ -1,5 +1,6 @@
 package com.example.springmongo.controller;
 
+import com.example.springmongo.model.Product;
 import com.example.springmongo.model.User;
 import com.example.springmongo.repositories.UserDao;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,52 +11,99 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 public class UserController {
     UserDao userDao;
+    ProductController productController;
 
     @Autowired
-    public UserController(UserDao userDao) {
+    public UserController(UserDao userDao, ProductController productController) {
         this.userDao = userDao;
+        this.productController = productController;
     }
 
     public List<User> getAllUsers() {
+
+        for (User u: userDao.findAll()){
+            actualizarProducto(u);
+        }
+
         return userDao.findAll();
     }
 
+    public User getUser(int id) {
+        User user = userDao.findById(id).get();
+
+        actualizarProducto(user);
+
+        return userDao.findById(id).get();
+    }
+
+    private void actualizarProducto(User user) {
+        for (Product p : user.getProducts()){
+            for (Product pp: productController.getAllProducts()){
+                if (productController.productDao.existsById(p.getId())){
+                    if (p.getId() == pp.getId()) {
+                        p.setName(pp.getName());
+                        p.setPrecio(pp.getPrecio());
+                        p.setQuantity(pp.getQuantity());
+                        userDao.save(user);
+                    }
+                }else{
+                    int i = user.getProducts().indexOf(p);
+                    user.getProducts().remove(i);
+                    userDao.save(user);
+                }
+            }
+        }
+
+
+    }
+
     public void addUser(User user) {
+        List<Product> products = user.getProducts();
+        productController.addAllProducts(products);
+
         userDao.save(user);
     }
 
-    public User getUser(Long id) {
-        Optional<User> users = userDao.findById(id);
-        return users.get();
-    }
-
-    public void deleteUser(Long id) {
+    public void deleteUser(int id) {
         User user = getUser(id);
         userDao.delete(user);
     }
 
-    public void putUser(User user, Long id) {
+    public void putUser(User user, int id) {
 
         User real = getUser(id);
-
         real.setEmail(user.getEmail());
-        real.setPassword(user.getPassword());
-        real.setFullName(user.getFullName());
+        real.setName(user.getName());
+
+        List<Product> products = user.getProducts();
+        for (Product p: real.getProducts()){
+            for (Product pp: products){
+                if (p.getId() == pp.getId()){
+                    p.setName(pp.getName());
+                    p.setPrecio(pp.getPrecio());
+                    p.setQuantity(pp.getQuantity());
+                }
+            }
+        }
+        productController.actualizarTodo(user.getProducts());
 
         userDao.save(real);
     }
 
-    public void patchUser(Long id, JsonPatch patch) throws JsonPatchException, JsonProcessingException {
+    public void patchUser(int id, JsonPatch patch) throws JsonPatchException, JsonProcessingException {
         User user = getUser(id);
         User userPatched = applyPatch(patch, user);
 
+        if (user.getProducts().size() == userPatched.getProducts().size()){
+            productController.actualizarTodo(userPatched.getProducts());
+        }else if (user.getProducts().size() < userPatched.getProducts().size()){
+            productController.addAllProducts(userPatched.getProducts());
+        }
         userDao.save(userPatched);
 
     }
@@ -66,17 +114,47 @@ public class UserController {
         JsonNode patched = patch.apply(objectMapper.convertValue(targetUser, JsonNode.class));
         return objectMapper.treeToValue(patched, User.class);
     }
+
+    public void addProduct(Product product, int id) {
+        User u = getUser(id);
+        productController.añadir(product);
+        Product p = productController.getProduct(product.getId());
+
+        boolean encontrar = false;
+        for (Product pp : u.getProducts()){
+            if (pp.getId() == p.getId()) {
+                encontrar = true;
+                break;
+            }
+        }
+        if (!encontrar){
+            u.addProduct(p);
+        }
+        userDao.save(u);
+    }
+
+    public void deleteProductOnUser(int id, int index) {
+        User u = getUser(id);
+        u.getProducts().remove(index);
+        userDao.save(u);
+    }
+
 }
     /*
     {
         "op":"replace",
-        "path":"/email",
+        "path":"/prudcts/0/name",
         "value":"afafqwr"
     }
     {
         "op":"add",
-        "path":"/email/0",
-        "value":"Bread"
+        "path":"/products/0",
+        "value":{
+                "id": 5,
+                "name": "alantonto",
+                "quantity": 9,
+                "precio": 99
+                }
     }
     {
         "op":"remove",
@@ -84,13 +162,13 @@ public class UserController {
     }
     {
         "op":"move",
-        "from":"/email/0",
-        "path":"/email/?"
+        "from":"/products/0",
+        "path":"/products/2"
     }
     {
         "op":"copy",
-        "from":"/email/0",
-        "path":"/email/?"
+        "from":"/products/0",
+        "path":"/products/3"
     }
     {
         "op":"test",

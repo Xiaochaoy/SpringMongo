@@ -15,12 +15,17 @@ import java.util.List;
 public class User {
 
     @Id
-    private Long id;
+    private int id;
 
     @Transient
     public static final String SEQUENCE_NAME = "users_sequence";
+    private String name;
     private String email;
-    private String password;
-    private String fullName;
+
+    private List<Product> products;
+
+    public void addProduct(Product product){
+        products.add(product);
+    }
 
 }

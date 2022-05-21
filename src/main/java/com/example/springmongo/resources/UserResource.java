@@ -1,6 +1,7 @@
 package com.example.springmongo.resources;
 
 import com.example.springmongo.controller.UserController;
+import com.example.springmongo.model.Product;
 import com.example.springmongo.model.User;
 import com.example.springmongo.service.SequenceGeneratorService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,17 +29,17 @@ public class UserResource {
     }
 
     @GetMapping
-    public List<User> usersDto(){
+    public List<User> users(){
         return userController.getAllUsers();
     }
 
     @GetMapping("{id}")
-    public User user(@PathVariable("id") Long id){
+    public User user(@PathVariable("id") int id){
         return userController.getUser(id);
     }
 
     @GetMapping("{id}/email")
-    public Map<String,String> email(@PathVariable("id") Long id){
+    public Map<String,String> email(@PathVariable("id") int id){
         return Collections.singletonMap("email",userController.getUser(id).getEmail());
     }
 
@@ -48,18 +49,28 @@ public class UserResource {
         userController.addUser(user);
     }
 
+    @PostMapping("{id}")
+    public void addProductOnUser(@RequestBody Product product, @PathVariable("id") int id){
+        userController.addProduct(product,id);
+    }
+
     @DeleteMapping("{id}")
-    public void delete(@PathVariable("id") Long id){
+    public void delete(@PathVariable("id") int id){
         userController.deleteUser(id);
     }
 
+    @DeleteMapping("{id}/products/{index}")
+    public void delete(@PathVariable("id") int id, @PathVariable("index") int index){
+        userController.deleteProductOnUser(id,index-1);
+    }
+
     @PutMapping("{id}")
-    public void putUser(@RequestBody User user, @PathVariable("id") Long id){
+    public void putUser(@RequestBody User user, @PathVariable("id") int id){
         userController.putUser(user, id);
     }
 
     @PatchMapping("{id}")
-    public void patchUser(@PathVariable("id") Long id, @RequestBody JsonPatch patch) throws JsonPatchException, JsonProcessingException {
+    public void patchUser(@PathVariable("id") int id, @RequestBody JsonPatch patch) throws JsonPatchException, JsonProcessingException {
         userController.patchUser(id,patch);
     }
 }
